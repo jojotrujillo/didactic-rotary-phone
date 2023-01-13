@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace backend;
 
 public class WeatherForecast
 {
+    [Column(TypeName = "date")]
     public DateTime Date { get; set; }
 
     public int TemperatureC { get; set; }
