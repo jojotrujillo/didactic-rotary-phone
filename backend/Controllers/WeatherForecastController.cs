@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 
 namespace backend.Controllers;
 
@@ -6,11 +7,6 @@ namespace backend.Controllers;
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
     private readonly ILogger<WeatherForecastController> _logger;
 
     public WeatherForecastController(ILogger<WeatherForecastController> logger)
@@ -21,12 +17,31 @@ public class WeatherForecastController : ControllerBase
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        return GetWeatherForecast().Result;
+    }
+
+    protected async Task<IEnumerable<WeatherForecast>> GetWeatherForecast()
+    {
+        string connectionString = "Host=localhost;Database=didactic;Username=didactic;Password=didactic;";
+        await using var dataSource = NpgsqlDataSource.Create(connectionString);
+        await using var command = dataSource.CreateCommand("SELECT * FROM public.\"WeatherForecasts\"");
+        await using var reader = await command.ExecuteReaderAsync();
+        List<WeatherForecast> list = new List<WeatherForecast>();
+
+        while (await reader.ReadAsync())
         {
-            Date = DateTime.Now.AddDays(index),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        })
-        .ToArray();
+            DateTime? date = reader["Date"] as DateTime?;
+            int? temperatureC = reader["TemperatureC"] as int?;
+            string? summary = reader["Summary"] as string;
+
+            list.Add(new WeatherForecast
+            {
+                Date = date.Value,
+                TemperatureC = temperatureC.Value,
+                Summary = summary
+            });
+        }
+
+        return await Task.FromResult(list);
     }
 }
