@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - didactic-rotary-phone
 on:
   push:
     branches:
-      - backend-deployment
+      - main
     paths:
       - 'backend/**'
   workflow_dispatch:
