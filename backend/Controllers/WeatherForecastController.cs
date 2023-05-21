@@ -36,8 +36,8 @@ public class WeatherForecastController : ControllerBase
 
             list.Add(new WeatherForecast
             {
-                Date = date.Value,
-                TemperatureC = temperatureC.Value,
+                Date = date ?? DateTime.UtcNow,
+                TemperatureC = temperatureC ?? 0,
                 Summary = summary
             });
         }
